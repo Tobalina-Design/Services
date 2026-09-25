@@ -6,13 +6,14 @@ Web de marca personal de Tobalina Studio (Beatriz Tobalina). Next.js 14 / TypeSc
 
 ## Concepto
 
-Metáfora del carnet de identidad. La jerarquía es intencional y no debe invertirse:
+La web ENTERA es el carnet de identidad — no una página que contiene una tarjeta. Un único componente, `components/IdentityExperience.tsx`, monta la experiencia completa a pantalla completa:
 
-- `components/IdentityMark.tsx` — identidad de marca (nombre + statement). Fija, sin condición de interacción. Es lo primero e innegociable que se ve al abrir la web.
-- `components/VerificationCard.tsx` — capa de verificación. Tarjeta con tilt 3D por cursor; el foil holográfico y el microtexto secundario solo se revelan al inclinar por encima de un umbral (`REVEAL_THRESHOLD`). Refuerza el mensaje, nunca lo porta.
-- `components/Verticals.tsx` — bifurcación en dos documentos: identidad corporativa (B2B) y bodas/eventos de alto nivel. Secciones separadas, mismo ADN tipográfico, atmósfera propia.
+- Nombre + statement ("No hacemos ruido. Hacemos identidad.") ocupan el centro del viewport, siempre visibles, sin condición de interacción — es lo primero e innegociable que se ve al abrir la web.
+- El tilt 3D (cursor / giroscopio) se aplica a la pantalla entera, no a un elemento aislado.
+- El foil holográfico y el microtexto secundario (`lib/documents.ts` → `microtext`) son la capa de verificación: solo se revelan al inclinar por encima de un umbral (`REVEAL_THRESHOLD`). Refuerzan el mensaje, nunca lo portan.
+- Las dos verticales (identidad corporativa / bodas y eventos de alto nivel) son documentos completos distintos, definidos en `lib/documents.ts`, que se intercambian por clic en el selector inferior — nunca por scroll.
 
-Apenas scroll: hero en un solo viewport, sin scroll narrativo largo.
+Cero scroll: un único viewport que cambia de documento, no una página que se recorre.
 
 ## Desarrollo
 

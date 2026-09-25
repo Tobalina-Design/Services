@@ -1,11 +1,9 @@
-import Hero from "@/components/Hero";
-import Verticals from "@/components/Verticals";
+import IdentityExperience from "@/components/IdentityExperience";
 
 export default function Home() {
   return (
     <main>
-      <Hero />
-      <Verticals />
+      <IdentityExperience />
     </main>
   );
 }
