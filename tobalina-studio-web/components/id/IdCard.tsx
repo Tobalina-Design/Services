@@ -5,7 +5,7 @@
 // Móvil: el documento SIEMPRE se compone en horizontal. Con el teléfono en
 // vertical se muestra girado 90°, de modo que hay que girar el móvil para leerlo.
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import { DOC_NUMBER, EMAIL, MRZ_LINES, STATEMENT_LINES, VERTICALS } from "@/lib/idcard";
 import FitText from "./FitText";
 import { useMediaQuery } from "./useMediaQuery";
@@ -35,6 +35,30 @@ export default function IdCard() {
   const [face, setFace] = useState<Face>("front");
   const [hint, setHint] = useState(false);
 
+  // Tilt: la tarjeta se inclina siguiendo el cursor (solo ratón, no en móvil)
+  const fine = useMediaQuery("(pointer: fine)");
+  const tilt = fine && !rotated && !reduce;
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const sx = useSpring(rx, { stiffness: 140, damping: 18 });
+  const sy = useSpring(ry, { stiffness: 140, damping: 18 });
+  const gx = useTransform(sy, [-3.5, 3.5], [20, 80]);
+  const gy = useTransform(sx, [-2.5, 2.5], [80, 20]);
+  const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.45), rgba(255,255,255,0) 45%)`;
+  const glareOpacity = useTransform([sx, sy], ([x, y]: number[]) => Math.min(1, (Math.abs(x) + Math.abs(y)) / 3.5));
+
+  function onMove(e: React.MouseEvent) {
+    if (!tilt) return;
+    const px = e.clientX / window.innerWidth;
+    const py = e.clientY / window.innerHeight;
+    ry.set((px - 0.5) * 7);
+    rx.set((0.5 - py) * 5);
+  }
+  function onLeave() {
+    rx.set(0);
+    ry.set(0);
+  }
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") setFace("back");
@@ -58,9 +82,17 @@ export default function IdCard() {
     : { position: "absolute", inset: 0 };
 
   return (
-    <div className="relative h-[100dvh] w-screen overflow-hidden bg-ink">
-      <div style={{ ...frame, padding: "max(6px, 0.9vmin)" }}>
-        <div className="card relative h-full w-full overflow-hidden text-ink" style={{ borderRadius: "max(14px, 2.2vmin)" }}>
+    <div className="relative h-[100dvh] w-screen overflow-hidden bg-ink" onMouseMove={onMove} onMouseLeave={onLeave}>
+      <div style={{ ...frame, padding: tilt ? "max(14px, 3.4vmin)" : "max(6px, 0.9vmin)", perspective: 2000 }}>
+        <motion.div
+          className="card relative h-full w-full overflow-hidden text-ink"
+          style={{
+            borderRadius: "max(14px, 2.2vmin)",
+            rotateX: tilt ? sx : 0,
+            rotateY: tilt ? sy : 0,
+            boxShadow: tilt ? "0 30px 80px rgba(0,0,0,0.45)" : undefined,
+          }}
+        >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={face}
@@ -78,7 +110,14 @@ export default function IdCard() {
               )}
             </motion.div>
           </AnimatePresence>
-        </div>
+          {tilt && (
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10"
+              style={{ background: glare, opacity: glareOpacity, mixBlendMode: "soft-light" }}
+            />
+          )}
+        </motion.div>
       </div>
 
       <AnimatePresence>

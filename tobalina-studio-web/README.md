@@ -10,6 +10,7 @@ La web es un DNI a pantalla completa (`components/id/IdCard.tsx`), sin scroll y 
 
 - **Anverso** — solo lo esencial: chip, la declaración "No hacemos ruido. Hacemos identidad." y TOBALINA a todo el ancho.
 - **Reverso** — servicios en dos columnas (identidad corporativa / bodas & eventos), contacto (tobalina.design@gmail.com) y zona de lectura mecánica en formato DNI (3 × 30).
+- **Tilt**: en escritorio la tarjeta se inclina siguiendo el cursor, con un brillo que acompaña.
 - Se cambia de cara con un fundido (botón "Servicios →" / "← Anverso"; en escritorio también ← → o R).
 - **Móvil**: el documento siempre se compone en horizontal. Con el teléfono en vertical aparece girado 90° y hay que girar el móvil para leerlo (aviso breve al cargar).
 
