@@ -5,13 +5,6 @@ export const EMAIL = "tobalina.design@gmail.com";
 export const STATEMENT_LINES = ["No hacemos ruido.", "Hacemos identidad."];
 export const DOC_NUMBER = "TBLN—ID.01";
 
-export const FRONT_FIELDS = [
-  { label: "Nombre / Name", value: "Estudio de diseño e identidad", wide: true },
-  { label: "Nacionalidad", value: "Identidad" },
-  { label: "Sede / Place", value: "Madrid" },
-  { label: "Validez / Expiry", value: "Atemporal" },
-];
-
 export const VERTICALS = [
   { key: "corporativo", title: "Identidad corporativa", destination: "Para compañías", items: services.corporativo },
   { key: "eventos", title: "Bodas & eventos", destination: "Alto nivel", items: services.eventos },

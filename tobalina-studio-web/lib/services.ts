@@ -1,4 +1,4 @@
-// Servicios por vertical. Descripciones mínimas, sin adjetivos.
+// Servicios por vertical. Una línea por servicio: qué es y qué consigue.
 export interface ServiceItem {
   title: string;
   description: string;
@@ -6,15 +6,15 @@ export interface ServiceItem {
 
 export const services: Record<"corporativo" | "eventos", ServiceItem[]> = {
   corporativo: [
-    { title: "Identidad de marca", description: "Naming. Sistema visual. Aplicaciones." },
-    { title: "Presentaciones", description: "Consultoría. Inversión. Dirección." },
-    { title: "Editorial", description: "Informes. Dossieres. Publicaciones." },
-    { title: "Dirección de arte", description: "Campañas. Activos de marca." },
+    { title: "Identidad de marca", description: "Nombre, símbolo y sistema. Una marca que se reconoce sin explicarse." },
+    { title: "Presentaciones", description: "Para decidir: inversión, consejo, cliente. Cada diapositiva, un argumento." },
+    { title: "Editorial", description: "Informes y dossieres con la autoridad de un libro." },
+    { title: "Dirección de arte", description: "Un mismo criterio en cada campaña y en cada pieza." },
   ],
   eventos: [
-    { title: "Identidad de boda", description: "Monograma. Paleta. Tipografía." },
-    { title: "Papelería", description: "Invitaciones. Minutas. Señalética." },
-    { title: "Dirección de arte", description: "De la invitación al último detalle." },
-    { title: "Gran formato", description: "Cartelería. Escenografía gráfica." },
+    { title: "Identidad del evento", description: "Monograma, paleta y tipografía propios. Nunca una plantilla." },
+    { title: "Papelería", description: "Invitación, minuta, seating y señalética, impresos con oficio." },
+    { title: "Dirección de arte", description: "Una sola mirada, del save the date al último detalle." },
+    { title: "Gran formato", description: "Lonas, cartelería y escenografía gráfica a la escala del espacio." },
   ],
 };

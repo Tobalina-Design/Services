@@ -56,28 +56,13 @@ body {
   stroke-width: 0.8;
 }
 
-/* Foto: monograma, nunca un retrato */
-.photo {
-  background: linear-gradient(160deg, rgba(228, 219, 200, 0.55), rgba(201, 194, 180, 0.35));
-  border: 1px solid rgba(35, 46, 44, 0.3);
-}
-
-/* Holograma: disco de foil que gira muy despacio */
-.holo {
-  width: 34%;
-  aspect-ratio: 1;
-  right: -12%;
-  bottom: -9%;
-  border-radius: 9999px;
-  background: conic-gradient(from 0deg, #e4dbc8, #f4efe6, #c9c2b4, #a39a88, #e4dbc8, #f4efe6, #c9c2b4);
-  opacity: 0.55;
-  mix-blend-mode: multiply;
-  animation: holo 24s linear infinite;
-}
-@keyframes holo {
-  to {
-    transform: rotate(360deg);
-  }
+.desc {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: clamp(10px, 1.35vmin, 15px);
+  line-height: 1.35;
+  color: rgba(35, 46, 44, 0.68);
+  margin-top: 0.3em;
 }
 
 .mrz {
@@ -128,8 +113,7 @@ button:focus-visible {
   animation: rotate-phone 2.8s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rotate-phone,
-  .holo {
+  .rotate-phone {
     animation: none;
   }
 }

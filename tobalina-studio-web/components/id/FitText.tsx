@@ -10,12 +10,14 @@ export default function FitText({
   className = "",
   style,
   max = 2000,
+  lineHeight = 0.84,
   "aria-hidden": ariaHidden,
 }: {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
   max?: number;
+  lineHeight?: number;
   "aria-hidden"?: boolean | "true";
 }) {
   const wrap = useRef<HTMLDivElement>(null);
@@ -38,8 +40,8 @@ export default function FitText({
   }, [children, max]);
 
   return (
-    <div ref={wrap} className={`w-full ${className}`} style={style} aria-hidden={ariaHidden}>
-      <span ref={txt} className="inline-block whitespace-nowrap" style={{ fontSize: "8vw", lineHeight: 0.84 }}>
+    <div ref={wrap} className={`flex w-full ${className}`} style={style} aria-hidden={ariaHidden}>
+      <span ref={txt} className="inline-block whitespace-nowrap" style={{ fontSize: "8vw", lineHeight }}>
         {children}
       </span>
     </div>
