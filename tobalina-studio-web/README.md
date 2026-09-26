@@ -6,14 +6,13 @@ Web de marca personal de Tobalina Studio (Beatriz Tobalina). Next.js 14 / TypeSc
 
 ## Concepto
 
-La web ENTERA es el carnet de identidad — no una página que contiene una tarjeta. Un único componente, `components/IdentityExperience.tsx`, monta la experiencia completa a pantalla completa:
+La web ENTERA es el carnet de identidad — no una página que contiene una tarjeta. Un único componente, `components/IdentityExperience.tsx`, monta la experiencia completa a pantalla completa, con dos caras como un DNI/pasaporte real:
 
-- Nombre + statement ("No hacemos ruido. Hacemos identidad.") ocupan el centro del viewport, siempre visibles, sin condición de interacción — es lo primero e innegociable que se ve al abrir la web.
-- El tilt 3D (cursor / giroscopio) se aplica a la pantalla entera, no a un elemento aislado.
-- El foil holográfico y el microtexto secundario (`lib/documents.ts` → `microtext`) son la capa de verificación: solo se revelan al inclinar por encima de un umbral (`REVEAL_THRESHOLD`). Refuerzan el mensaje, nunca lo portan.
-- Las dos verticales (identidad corporativa / bodas y eventos de alto nivel) son documentos completos distintos, definidos en `lib/documents.ts`, que se intercambian por clic en el selector inferior — nunca por scroll.
+- **Frente** — nombre + statement ("No hacemos ruido. Hacemos identidad.") ocupan el centro del viewport, siempre visibles, sin condición de interacción. El tilt 3D (cursor / giroscopio) se aplica solo aquí; el foil holográfico y el microtexto secundario (`lib/documents.ts` → `microtext`) son la capa de verificación, revelados solo tras un umbral (`REVEAL_THRESHOLD`).
+- **Reverso** — servicios de la vertical activa (`lib/services.ts`), en grid, más una franja decorativa tipo zona de lectura mecánica de pasaporte (`mrz`). Se accede con el botón "servicios →" — giro explícito, nunca automático.
+- Las dos verticales (identidad corporativa / bodas y eventos de alto nivel) son documentos completos distintos que se intercambian por clic en el selector inferior — nunca por scroll. Cambiar de documento vuelve siempre al frente.
 
-Cero scroll: un único viewport que cambia de documento, no una página que se recorre.
+Cero scroll: un único viewport que cambia de cara y de documento, no una página que se recorre.
 
 ## Desarrollo
 
