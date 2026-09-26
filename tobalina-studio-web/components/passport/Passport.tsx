@@ -12,7 +12,6 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { SPREADS, type PageId } from "@/lib/passport";
 import Cover from "./Cover";
 import { renderPage } from "./Pages";
-import { SecurityDefs } from "./Security";
 import { useMediaQuery } from "./useMediaQuery";
 
 type Turn = { from: number; to: number; dir: 1 | -1 };
@@ -73,7 +72,6 @@ export default function Passport() {
 
   return (
     <div className={`passport relative h-[100dvh] w-screen overflow-hidden bg-ink ${uv ? "uv" : ""}`}>
-      <SecurityDefs />
       <AnimatePresence mode="popLayout" initial={false}>
         {showCover ? (
           <motion.div
@@ -154,7 +152,7 @@ export default function Passport() {
               {/* Lomo */}
               <div
                 className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-px -translate-x-1/2"
-                style={{ background: "rgba(0,0,0,0.25)" }}
+                style={{ background: "var(--pg-fg)" }}
               />
 
               {/* Esquinas para pasar página (escritorio) */}
@@ -179,23 +177,14 @@ export default function Passport() {
             {/* Navegación */}
             <nav
               aria-label="Navegación del pasaporte"
-              className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-full bg-ink/85 px-1.5 py-1 font-body text-paper shadow-[0_8px_30px_rgba(0,0,0,0.3)] backdrop-blur"
-              style={{ fontSize: 11 }}
+              className="nav absolute bottom-2 left-1/2 z-30 flex -translate-x-1/2 items-stretch"
             >
-              <button
-                type="button"
-                onClick={() => goTo(spread - 1)}
-                disabled={current === 0}
-                aria-label="Página anterior"
-                className="nav-btn"
-              >
+              <button type="button" onClick={() => goTo(spread - 1)} disabled={current === 0} aria-label="Página anterior" className="nav-btn">
                 ←
               </button>
-              <span className="min-w-0 truncate px-2 uppercase tracking-[0.16em]" aria-live="polite">
-                <span className="font-mono text-sand/70">
-                  {String(current + 1).padStart(2, "0")}/{String(SPREADS.length).padStart(2, "0")}
-                </span>
-                <span className="ml-2 hidden sm:inline">{SPREADS[current].label}</span>
+              <span className="nav-cell" aria-live="polite">
+                {String(current + 1).padStart(2, "0")}/{String(SPREADS.length).padStart(2, "0")}
+                <span className="ml-3 hidden sm:inline">{SPREADS[current].label}</span>
               </span>
               <button
                 type="button"
@@ -206,20 +195,19 @@ export default function Passport() {
               >
                 →
               </button>
-              <span className="mx-1 h-4 w-px bg-paper/20" />
               <button
                 type="button"
                 onClick={() => setUv((v) => !v)}
                 aria-pressed={uv}
-                aria-label="Luz ultravioleta: revelar tintas ocultas"
+                aria-label="Luz ultravioleta: revelar tinta oculta"
                 title="Luz UV (U)"
-                className={`nav-btn px-3 uppercase tracking-[0.16em] ${uv ? "bg-paper text-ink" : ""}`}
+                className={`nav-btn ${uv ? "nav-on" : ""}`}
               >
                 UV
               </button>
               {!touchLandscape && (
                 <button type="button" onClick={() => setOpened(false)} aria-label="Cerrar pasaporte" title="Cerrar (Esc)" className="nav-btn">
-                  ×
+                  Cerrar
                 </button>
               )}
             </nav>

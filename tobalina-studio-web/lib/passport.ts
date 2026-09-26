@@ -1,9 +1,8 @@
-// Contenido del pasaporte Tobalina. Todo el copy vive aquí.
+// Contenido del pasaporte Tobalina. Tono: seco, declarativo, en mayúsculas.
 import { services } from "./services";
 
 export const EMAIL = "tobalina.design@gmail.com";
 export const STATEMENT = "No hacemos ruido. Hacemos identidad.";
-export const SUBLINE = "Diseñamos para perdurar, no solo para llamar la atención.";
 
 export type PageId =
   | "inside"
@@ -15,11 +14,10 @@ export type PageId =
   | "obs"
   | "contact";
 
-// Cada doble página: [izquierda, derecha]
 export const SPREADS: { pages: [PageId, PageId]; label: string }[] = [
   { pages: ["inside", "data"], label: "Identidad" },
-  { pages: ["visa-corp-intro", "visa-corp-stamps"], label: "Visado · Identidad corporativa" },
-  { pages: ["visa-ev-intro", "visa-ev-stamps"], label: "Visado · Bodas & eventos" },
+  { pages: ["visa-corp-intro", "visa-corp-stamps"], label: "Corporativo" },
+  { pages: ["visa-ev-intro", "visa-ev-stamps"], label: "Bodas & eventos" },
   { pages: ["obs", "contact"], label: "Contacto" },
 ];
 
@@ -31,11 +29,9 @@ export const PAGE_NUMBER: Record<PageId, number> = SPREADS.flatMap((s) => s.page
 export interface Visa {
   key: "corporativo" | "eventos";
   number: string;
-  category: string;
+  lines: string[];
+  label: string;
   destination: string;
-  intro: string;
-  stampTop: string;
-  stampBottom: string;
   services: { title: string; description: string }[];
 }
 
@@ -43,29 +39,25 @@ export const VISAS: Record<"corporativo" | "eventos", Visa> = {
   corporativo: {
     key: "corporativo",
     number: "01",
-    category: "Identidad corporativa",
-    destination: "Compañías · B2B",
-    intro: "Estructura, precisión y consultoría de marca para compañías.",
-    stampTop: "TOBALINA · MADRID",
-    stampBottom: "IDENTIDAD CORPORATIVA",
+    lines: ["IDENTIDAD", "CORPORATIVA"],
+    label: "Identidad corporativa",
+    destination: "Para compañías.",
     services: services.corporativo,
   },
   eventos: {
     key: "eventos",
     number: "02",
-    category: "Bodas & eventos",
-    destination: "Bodas y eventos de alto nivel",
-    intro: "El mismo rigor, con una atmósfera más cálida e íntima.",
-    stampTop: "TOBALINA · MADRID",
-    stampBottom: "BODAS & EVENTOS",
+    lines: ["BODAS &", "EVENTOS"],
+    label: "Bodas & eventos",
+    destination: "Para bodas y eventos de alto nivel.",
     services: services.eventos,
   },
 };
 
 export const OBSERVATIONS = [
-  "Piezas 100% únicas. Sin plantillas.",
-  "Confidencialidad: el trabajo entregado no se publica.",
-  SUBLINE,
+  "Piezas únicas. Sin plantillas.",
+  "El trabajo no se enseña. Se entrega.",
+  "Diseñado para perdurar.",
 ];
 
 // Zona de lectura mecánica (MRZ): 2 líneas x 44 caracteres, como un pasaporte TD3.
@@ -83,8 +75,7 @@ export const MRZ_LINES = [
   mrz("NOHACEMOS<RUIDO<<HACEMOS<IDENTIDAD<<TBLNID01"),
 ];
 
-// Unidad fluida relativa al tamaño de cada página (container query units),
-// con suelo en px para legibilidad en móvil apaisado.
+// Unidad fluida relativa a cada página (container query units), con suelo en px.
 export function u(n: number, floorPx = 0) {
   const fluid = `min(${n}cqh, ${(n * 1.45).toFixed(2)}cqw)`;
   return floorPx ? `max(${floorPx}px, ${fluid})` : fluid;

@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brutalista: dos tintas (ink / paper), cero ornamento, cero radios. */
+
 html,
 body {
   height: 100%;
@@ -15,127 +17,79 @@ body {
   font-family: "Inter", Arial, Helvetica, sans-serif;
 }
 
-/* ---------- Variables de página (se invierten en modo UV) ---------- */
+.label {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: max(9px, 1.05vmin);
+}
+
+/* ---------- Páginas (se invierten con luz UV) ---------- */
 .passport {
   --pg-bg: #f4efe6;
   --pg-fg: #232e2c;
-  --pg-ink2: #7a6a52;
-  --pg-fiber: #7a6a52;
 }
 .passport.uv {
-  --pg-bg: #141b1a;
-  --pg-fg: #e4dbc8;
-  --pg-ink2: #c9c2b4;
-  --pg-fiber: #f4efe6;
+  --pg-bg: #232e2c;
+  --pg-fg: #f4efe6;
 }
-
 .pg {
   container-type: size;
-  background-color: var(--pg-bg);
-  background-image: linear-gradient(180deg, rgba(228, 219, 200, 0.35), transparent 30%, transparent 70%, rgba(228, 219, 200, 0.35));
+  background: var(--pg-bg);
   color: var(--pg-fg);
-  transition: background-color 0.6s ease, color 0.6s ease;
-}
-.passport.uv .pg {
-  background-image: radial-gradient(circle at 50% 40%, rgba(201, 194, 180, 0.08), transparent 70%);
-}
-
-.ink2 {
-  color: var(--pg-ink2);
-}
-.hair {
-  border-color: color-mix(in srgb, currentColor 20%, transparent);
-}
-.hair-strong {
-  border-color: color-mix(in srgb, currentColor 55%, transparent);
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .mrz {
   font-family: "OCR-B", "OCR B", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color: var(--pg-fg);
 }
 
-/* ---------- Modo UV: tintas ocultas y fibras fluorescentes ---------- */
+/* Tinta oculta: texto a trazo, visible solo con UV */
 .uv-only {
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.5s ease;
 }
 .passport.uv .uv-only {
   opacity: 1;
 }
-.uv-glow {
-  color: rgba(228, 219, 200, 0.22);
-  text-shadow: 0 0 18px rgba(228, 219, 200, 0.45), 0 0 2px rgba(244, 239, 230, 0.6);
-}
-.fibers {
-  opacity: 0.25;
-  transition: opacity 0.7s ease, filter 0.7s ease;
-}
-.passport.uv .fibers {
-  opacity: 0.95;
-  filter: drop-shadow(0 0 2px rgba(244, 239, 230, 0.9));
-}
-.stamp-blend {
-  mix-blend-mode: multiply;
-}
-.passport.uv .stamp-blend {
-  mix-blend-mode: screen;
-}
-
-/* ---------- Portada: foil que sigue al cursor ---------- */
-.foil-text {
-  background: linear-gradient(
-    105deg,
-    #a39a88 0%,
-    #e4dbc8 calc(var(--fx, 50%) - 18%),
-    #ffffff var(--fx, 50%),
-    #e4dbc8 calc(var(--fx, 50%) + 18%),
-    #a39a88 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
+.uv-ink {
   color: transparent;
-}
-.foil-border {
-  border: 1.5px solid #c9c2b4;
-  box-shadow: inset 0 0 0 6px #232e2c, inset 0 0 0 7px rgba(201, 194, 180, 0.5);
-}
-.foil-sheen {
-  background: radial-gradient(circle at var(--fx, 50%) var(--fy, 40%), rgba(228, 219, 200, 0.1), transparent 45%);
+  -webkit-text-stroke: 1px rgba(244, 239, 230, 0.35);
 }
 
-/* ---------- Holograma de la foto ---------- */
-.hologram {
-  opacity: 0.35;
-  mix-blend-mode: soft-light;
-  background: conic-gradient(
-    from calc(var(--hx, 0.3) * 1turn) at calc(var(--hx, 0.5) * 100%) calc(var(--hy, 0.5) * 100%),
-    rgba(228, 219, 200, 0),
-    rgba(255, 255, 255, 0.8),
-    rgba(201, 194, 180, 0),
-    rgba(122, 106, 82, 0.7),
-    rgba(228, 219, 200, 0)
-  );
-  transition: opacity 0.4s ease;
+/* Índice */
+.index-row:hover {
+  background: var(--pg-fg);
+  color: var(--pg-bg);
 }
-.group\/data:hover .hologram {
-  opacity: 0.9;
+
+/* Email: subrayado que se dibuja */
+.email-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 3px no-repeat;
+  transition: background-size 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  padding-bottom: 4px;
+}
+.email-link:hover {
+  background-size: 100% 3px;
 }
 
 /* ---------- Esquinas para pasar página ---------- */
 .corner {
-  width: 11vmin;
-  height: 11vmin;
-  transition: background 0.3s ease;
-}
-.corner-right {
-  background: linear-gradient(315deg, transparent 50%, transparent 50%);
+  width: 9vmin;
+  height: 9vmin;
 }
 .corner-right:hover {
-  background: linear-gradient(315deg, #232e2c 0%, #3a4440 24%, rgba(228, 219, 200, 0.9) 25%, transparent 26%);
+  background: linear-gradient(315deg, #232e2c 50%, transparent 50%);
 }
 .corner-left:hover {
-  background: linear-gradient(45deg, #232e2c 0%, #3a4440 24%, rgba(228, 219, 200, 0.9) 25%, transparent 26%);
+  background: linear-gradient(45deg, #232e2c 50%, transparent 50%);
+}
+.passport.uv .corner-right:hover {
+  background: linear-gradient(315deg, #f4efe6 50%, transparent 50%);
+}
+.passport.uv .corner-left:hover {
+  background: linear-gradient(45deg, #f4efe6 50%, transparent 50%);
 }
 @media (pointer: coarse) {
   .corner {
@@ -144,38 +98,49 @@ body {
 }
 
 /* ---------- Navegación ---------- */
+.nav {
+  background: #232e2c;
+  color: #f4efe6;
+  border: 1px solid #f4efe6;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+  height: 32px;
+}
+.nav-cell {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-left: 1px solid rgba(244, 239, 230, 0.25);
+  border-right: 1px solid rgba(244, 239, 230, 0.25);
+  white-space: nowrap;
+}
 .nav-btn {
-  min-width: 32px;
-  height: 30px;
-  border-radius: 9999px;
+  min-width: 40px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
 }
-.nav-btn:hover:not(:disabled) {
-  background: rgba(244, 239, 230, 0.14);
+.nav-btn + .nav-btn {
+  border-left: 1px solid rgba(244, 239, 230, 0.25);
+}
+.nav-btn:hover:not(:disabled),
+.nav-on {
+  background: #f4efe6;
+  color: #232e2c;
 }
 .nav-btn:disabled {
-  opacity: 0.3;
+  opacity: 0.25;
 }
-.nav-btn:focus-visible,
-.corner:focus-visible,
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid #c9c2b4;
+  outline: 2px solid currentColor;
   outline-offset: 2px;
-}
-
-/* ---------- Enlace de email ---------- */
-.email-link {
-  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1px no-repeat;
-  transition: background-size 0.45s cubic-bezier(0.65, 0, 0.35, 1);
-  padding-bottom: 2px;
-  word-break: break-all;
-}
-.email-link:hover {
-  background-size: 100% 1px;
 }
 
 /* ---------- Aviso de girar el móvil ---------- */
