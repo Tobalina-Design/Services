@@ -1,21 +1,37 @@
 "use client";
 
-// La web es un DNI a pantalla completa, con anverso y reverso. Sin scroll.
-// Las caras cambian con un fundido (botón; en escritorio también ← → y R).
-// Móvil: el documento SIEMPRE se compone en horizontal. Con el teléfono en
-// vertical se muestra girado 90°, de modo que hay que girar el móvil para leerlo.
+// La web es un DNI a pantalla completa, con anverso y reverso reales en 3D.
+// - Carga: "verificando identidad", sale como un telón.
+// - Anverso: grano de fondo que el cursor silencia ("no hacemos ruido").
+// - Volteo lento: la tarjeta se eleva, gira 180° y se asienta; las capas de
+//   contenido están a distinta profundidad, así que se desplazan entre sí (paralaje).
+// - Tilt con el cursor en escritorio. Modo claro / oscuro.
+// - Móvil: el documento siempre se compone en horizontal; en vertical aparece girado.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { AnimatePresence, animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { DOC_NUMBER, EMAIL, MRZ_LINES, STATEMENT_LINES, VERTICALS } from "@/lib/idcard";
 import FitText from "./FitText";
+import Grain from "./Grain";
+import Loader from "./Loader";
 import { useMediaQuery } from "./useMediaQuery";
 
 type Face = "front" | "back";
 type Theme = "light" | "dark";
 
 const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "light", toggle: () => {} });
-const PAD = "max(14px, 3vmin)";
+const PAD = "max(14px, 3.2vmin)";
 const GAP = "max(10px, 2.4vmin)";
+const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
 function useViewport() {
   const [vp, setVp] = useState({ w: 1440, h: 900 });
@@ -29,16 +45,21 @@ function useViewport() {
 }
 
 export default function IdCard() {
-  const reduce = useReducedMotion();
+  const reduce = !!useReducedMotion();
   const touch = useMediaQuery("(pointer: coarse)");
+  const fine = useMediaQuery("(pointer: fine)");
   const vp = useViewport();
   const rotated = touch && vp.h > vp.w;
   const eff = rotated ? { w: vp.h, h: vp.w } : vp;
   const short = eff.h < 520;
+
+  const [ready, setReady] = useState(false);
+  const onLoaded = useCallback(() => setReady(true), []);
   const [face, setFace] = useState<Face>("front");
+  const [turning, setTurning] = useState(false);
   const [hint, setHint] = useState(false);
 
-  // Modo claro / oscuro (se recuerda en este navegador; por defecto, el del sistema)
+  // Tema
   const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
     let saved: string | null = null;
@@ -58,47 +79,49 @@ export default function IdCard() {
     });
   }, []);
 
-  // Giro de la tarjeta al cambiar de cara: se inclina hasta ponerse de canto,
-  // cambia el contenido sin que se vea y vuelve a su sitio desde el otro lado.
-  const flipY = useMotionValue(0);
-  const flipScale = useTransform(flipY, [-90, 0, 90], [0.84, 1, 0.84]);
+  // Tilt con el cursor (muelle lento)
+  const tilt = fine && !rotated && !reduce;
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const sx = useSpring(rx, { stiffness: 60, damping: 18, mass: 1.2 });
+  const sy = useSpring(ry, { stiffness: 60, damping: 18, mass: 1.2 });
+  const gx = useTransform(sy, [-4, 4], [20, 80]);
+  const gy = useTransform(sx, [-3, 3], [80, 20]);
+  const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.4), rgba(255,255,255,0) 45%)`;
+  const glareOpacity = useTransform([sx, sy], ([x, y]: number[]) => Math.min(0.9, (Math.abs(x) + Math.abs(y)) / 4));
+
+  // Volteo
+  const flip = useMotionValue(0);
+  const rotY = useTransform([sy, flip], ([a, b]: number[]) => (tilt ? a : 0) + b);
+  const lift = useTransform(flip, [0, 90, 180], [1, 0.84, 1]);
   const faceRef = useRef<Face>("front");
   const busy = useRef(false);
   const turnTo = useCallback(
     async (target: Face) => {
       if (busy.current || target === faceRef.current) return;
       faceRef.current = target;
-      if (reduce) return setFace(target);
+      const angle = target === "back" ? 180 : 0;
+      if (reduce) {
+        flip.set(angle);
+        setFace(target);
+        return;
+      }
       busy.current = true;
-      const dir = target === "back" ? -1 : 1;
-      await animate(flipY, 90 * dir, { duration: 0.34, ease: [0.55, 0, 0.8, 0.35] });
+      setTurning(true);
+      const t = setTimeout(() => setFace(target), 850);
+      await animate(flip, angle, { duration: 1.7, ease: [0.7, 0, 0.2, 1] });
+      clearTimeout(t);
       setFace(target);
-      flipY.set(-90 * dir);
-      await animate(flipY, 0, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
+      setTurning(false);
       busy.current = false;
     },
-    [flipY, reduce]
+    [flip, reduce]
   );
-
-  // Tilt: la tarjeta se inclina siguiendo el cursor (solo ratón, no en móvil)
-  const fine = useMediaQuery("(pointer: fine)");
-  const tilt = fine && !rotated && !reduce;
-  const rx = useMotionValue(0);
-  const ry = useMotionValue(0);
-  const sx = useSpring(rx, { stiffness: 140, damping: 18 });
-  const sy = useSpring(ry, { stiffness: 140, damping: 18 });
-  const gx = useTransform(sy, [-3.5, 3.5], [20, 80]);
-  const gy = useTransform(sx, [-2.5, 2.5], [80, 20]);
-  const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.45), rgba(255,255,255,0) 45%)`;
-  const glareOpacity = useTransform([sx, sy], ([x, y]: number[]) => Math.min(1, (Math.abs(x) + Math.abs(y)) / 3.5));
-  const rotY = useTransform([sy, flipY], ([a, b]: number[]) => (tilt ? a : 0) + b);
 
   function onMove(e: React.MouseEvent) {
     if (!tilt) return;
-    const px = e.clientX / window.innerWidth;
-    const py = e.clientY / window.innerHeight;
-    ry.set((px - 0.5) * 7);
-    rx.set((0.5 - py) * 5);
+    ry.set((e.clientX / window.innerWidth - 0.5) * 8);
+    rx.set((0.5 - e.clientY / window.innerHeight) * 6);
   }
   function onLeave() {
     rx.set(0);
@@ -115,13 +138,12 @@ export default function IdCard() {
     return () => window.removeEventListener("keydown", onKey);
   }, [turnTo]);
 
-  // Aviso breve de "gira el móvil" cuando el documento aparece girado
   useEffect(() => {
-    if (!rotated) return setHint(false);
+    if (!rotated || !ready) return setHint(false);
     setHint(true);
     const t = setTimeout(() => setHint(false), 2600);
     return () => clearTimeout(t);
-  }, [rotated]);
+  }, [rotated, ready]);
 
   const frame: CSSProperties = rotated
     ? { position: "absolute", top: 0, left: "100vw", width: "100dvh", height: "100vw", transform: "rotate(90deg)", transformOrigin: "top left" }
@@ -129,66 +151,101 @@ export default function IdCard() {
 
   return (
     <ThemeCtx.Provider value={{ theme, toggle: toggleTheme }}>
-    <div
-      className={`theme-${theme} page relative h-[100dvh] w-screen overflow-hidden`}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-    >
-      <div style={{ ...frame, padding: tilt ? "max(14px, 3.4vmin)" : "max(6px, 0.9vmin)", perspective: 3600 }}>
-        <motion.div
-          className="card relative h-full w-full overflow-hidden"
-          style={{
-            borderRadius: "max(14px, 2.2vmin)",
-            rotateX: tilt ? sx : 0,
-            rotateY: rotY,
-            scale: flipScale,
-            boxShadow: tilt ? "0 30px 80px rgba(0,0,0,0.45)" : undefined,
-          }}
-        >
-          <div className="absolute inset-0 flex flex-col" style={{ padding: PAD, gap: GAP }}>
-            {face === "front" ? (
-              <Front onFlip={() => turnTo("back")} />
-            ) : (
-              <Back short={short} onFlip={() => turnTo("front")} />
-            )}
-          </div>
-          {tilt && (
-            <motion.div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-10"
-              style={{ background: glare, opacity: glareOpacity, mixBlendMode: "soft-light" }}
-            />
-          )}
-        </motion.div>
-      </div>
-
-      <AnimatePresence>
-        {hint && (
+      <div className={`theme-${theme} page relative h-[100dvh] w-screen overflow-hidden`} onMouseMove={onMove} onMouseLeave={onLeave}>
+        <div style={{ ...frame, padding: tilt ? "max(16px, 3.8vmin)" : "max(6px, 0.9vmin)", perspective: 2600 }}>
           <motion.div
-            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/60"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            className="relative h-full w-full"
+            style={{ rotateX: tilt ? sx : 0, rotateY: rotY, scale: lift, transformStyle: "preserve-3d" }}
+            initial={false}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{ duration: 1.3, ease: EASE_OUT, delay: ready ? 0.35 : 0 }}
           >
-            <div className="flex flex-col items-center gap-3 text-paper">
-              <svg className="rotate-phone" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-                <rect x="7" y="2.5" width="10" height="19" rx="1.5" />
-              </svg>
-              <span className="lbl" style={{ color: "#f4efe6" }}>
-                Gira el móvil
-              </span>
-            </div>
+            <FaceShell side="front" active={face === "front"} shown={face === "front" || turning} glare={tilt ? glare : null} glareOpacity={glareOpacity}>
+              <Grain reduce={reduce} className="layer" />
+              <Front ready={ready} reduce={reduce} onFlip={() => turnTo("back")} />
+            </FaceShell>
+            <FaceShell side="back" active={face === "back"} shown={face === "back" || turning} glare={tilt ? glare : null} glareOpacity={glareOpacity}>
+              <Back short={short} onFlip={() => turnTo("front")} />
+            </FaceShell>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </div>
+
+        <AnimatePresence>
+          {hint && (
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex flex-col items-center gap-3 text-paper">
+                <svg className="rotate-phone" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+                  <rect x="7" y="2.5" width="10" height="19" rx="1.5" />
+                </svg>
+                <span className="loader-lbl">Gira el móvil</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>{!ready && <Loader key="loader" onDone={onLoaded} />}</AnimatePresence>
+      </div>
     </ThemeCtx.Provider>
   );
 }
 
-/* ---------- Piezas comunes ---------- */
+/* ---------- Cara (anverso o reverso) ---------- */
 
+function FaceShell({
+  side,
+  active,
+  shown,
+  children,
+  glare,
+  glareOpacity,
+}: {
+  side: Face;
+  active: boolean;
+  shown: boolean;
+  children: ReactNode;
+  glare: MotionValue<string> | null;
+  glareOpacity: MotionValue<number>;
+}) {
+  // La cara oculta no recibe foco ni clics
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    if (active) ref.current.removeAttribute("inert");
+    else ref.current.setAttribute("inert", "");
+  }, [active]);
+  return (
+    <div
+      ref={ref}
+      className="face"
+      style={{
+        transform: side === "back" ? "rotateY(180deg)" : undefined,
+        pointerEvents: active ? "auto" : "none",
+        visibility: shown ? "visible" : "hidden",
+      }}
+      aria-hidden={!active}
+    >
+      <div className="face-bg layer" />
+      <div className="face-content" style={{ padding: PAD, gap: GAP }}>
+        {children}
+      </div>
+      {glare && (
+        <motion.div
+          aria-hidden="true"
+          className="layer pointer-events-none absolute inset-0"
+          style={{ background: glare, opacity: glareOpacity, mixBlendMode: "soft-light", borderRadius: "inherit", translateZ: 2 }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------- Piezas comunes ---------- */
 
 function Lbl({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <span className={`lbl ${className}`}>{children}</span>;
@@ -200,21 +257,6 @@ function Chip() {
       <rect x="0.5" y="0.5" width="39" height="29" rx="5" />
       <path d="M0.5 10h11M0.5 20h11M28.5 10h11M28.5 20h11M11.5 0.5v29M28.5 0.5v29M11.5 15h17M20 0.5v7M20 22.5v7" />
     </svg>
-  );
-}
-
-function Header({ left, right }: { left: string; right: string }) {
-  return (
-    <header className="hair flex items-center justify-between border-b" style={{ paddingBottom: "max(8px, 1.4vmin)" }}>
-      <div className="flex items-center" style={{ gap: "max(10px, 1.4vmin)" }}>
-        <Chip />
-        <Lbl>{left}</Lbl>
-      </div>
-      <div className="flex items-center" style={{ gap: "max(12px, 2vmin)" }}>
-        <ThemeToggle />
-        <Lbl className="hidden sm:inline">{right}</Lbl>
-      </div>
-    </header>
   );
 }
 
@@ -230,15 +272,32 @@ function ThemeToggle() {
       className="theme-toggle lbl flex items-center"
     >
       <span className={dark ? "" : "is-on"}>Claro</span>
-      <span aria-hidden="true" className="mx-2 opacity-40">/</span>
+      <span aria-hidden="true" className="mx-2 opacity-40">
+        /
+      </span>
       <span className={dark ? "is-on" : ""}>Oscuro</span>
     </button>
   );
 }
 
+function Header({ left, right }: { left: string; right: string }) {
+  return (
+    <header className="layer d1 hair flex items-center justify-between border-b" style={{ paddingBottom: "max(8px, 1.4vmin)" }}>
+      <div className="flex items-center" style={{ gap: "max(10px, 1.4vmin)" }}>
+        <Chip />
+        <Lbl>{left}</Lbl>
+      </div>
+      <div className="flex items-center" style={{ gap: "max(12px, 2vmin)" }}>
+        <ThemeToggle />
+        <Lbl className="hidden sm:inline">{right}</Lbl>
+      </div>
+    </header>
+  );
+}
+
 function BottomRow({ onFlip, to }: { onFlip: () => void; to: Face }) {
   return (
-    <div className="hair relative z-10 flex items-center justify-between border-t" style={{ paddingTop: "max(8px, 1.3vmin)" }}>
+    <div className="layer d1 hair flex items-center justify-between border-t" style={{ paddingTop: "max(8px, 1.3vmin)" }}>
       <a href={`mailto:${EMAIL}`} className="lbl link">
         {EMAIL}
       </a>
@@ -249,38 +308,60 @@ function BottomRow({ onFlip, to }: { onFlip: () => void; to: Face }) {
   );
 }
 
-/* ---------- Anverso: solo lo esencial ---------- */
+/* ---------- Anverso ---------- */
 
-function Front({ onFlip }: { onFlip: () => void }) {
+function Front({ ready, reduce, onFlip }: { ready: boolean; reduce: boolean; onFlip: () => void }) {
+  const t = (delay: number) => ({ duration: reduce ? 0 : 1.3, delay: reduce ? 0 : delay, ease: EASE_OUT });
   return (
     <>
       <Header left="Documento de identidad" right="TBL" />
-      <div className="flex min-h-0 flex-1 flex-col justify-center">
-        <h2 className="sr-only">{STATEMENT_LINES.join(" ")}</h2>
-        <div className="mx-auto w-[82%]">
-          {STATEMENT_LINES.map((l) => (
-            <FitText key={l} className="pointer-events-none font-display font-light uppercase" aria-hidden="true">
-              {l}
-            </FitText>
-          ))}
-        </div>
-      </div>
-      <BottomRow onFlip={onFlip} to="back" />
-      <h1 className="sr-only">Tobalina</h1>
-      <FitText className="pointer-events-none font-display font-light" aria-hidden="true">
+
+      {/* Logotipo: espaciado, discreto, alineado con la declaración */}
+      <motion.p
+        className="layer d2 wordmark font-display"
+        style={{ marginTop: "max(14px, 4vmin)" }}
+        initial={false}
+        animate={ready ? { opacity: 1, letterSpacing: "0.46em" } : { opacity: 0, letterSpacing: "0.9em" }}
+        transition={t(0.5)}
+      >
         TOBALINA
-      </FitText>
+      </motion.p>
+
+      <div className="layer flex-1" />
+
+      {/* Declaración: protagonista */}
+      <div className="layer d3">
+        <motion.p className="lbl" initial={false} animate={{ opacity: ready ? 1 : 0 }} transition={t(0.9)}>
+          Declaración / Statement
+        </motion.p>
+        <h2 className="statement font-display font-light" style={{ marginTop: "max(8px, 1.4vmin)" }}>
+          {STATEMENT_LINES.map((l, i) => (
+            <span key={l} className="block overflow-hidden pb-[0.08em]">
+              <motion.span className="block" initial={false} animate={{ y: ready ? "0%" : "110%" }} transition={t(0.6 + i * 0.14)}>
+                {l}
+              </motion.span>
+            </span>
+          ))}
+        </h2>
+      </div>
+
+      {/* Detalle de documento en el canto */}
+      <p aria-hidden="true" className="layer d1 lbl edge-note">
+        {DOC_NUMBER} · Madrid · Validez atemporal
+      </p>
+
+      <BottomRow onFlip={onFlip} to="back" />
     </>
   );
 }
 
-/* ---------- Reverso: servicios, contacto, zona de lectura mecánica ---------- */
+/* ---------- Reverso ---------- */
 
 function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
   return (
     <>
       <Header left="Servicios" right={DOC_NUMBER} />
-      <div className="grid min-h-0 flex-1 grid-cols-2 content-center" style={{ gap: "max(16px, 5vmin)" }}>
+      <div className="layer d3 grid min-h-0 flex-1 grid-cols-2 content-center" style={{ gap: "max(16px, 5vmin)" }}>
         {VERTICALS.map((v, vi) => (
           <section key={v.key} aria-labelledby={`v-${v.key}`}>
             <div className="hair flex items-baseline justify-between border-b" style={{ paddingBottom: "max(6px, 1vmin)" }}>
@@ -310,7 +391,7 @@ function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
         ))}
       </div>
       <BottomRow onFlip={onFlip} to="front" />
-      <div className="mrz" aria-label="Zona de lectura mecánica">
+      <div className="layer d1 mrz" aria-label="Zona de lectura mecánica">
         {MRZ_LINES.map((l) => (
           <FitText key={l} max={short ? 11 : 24} lineHeight={1.3}>
             {l}

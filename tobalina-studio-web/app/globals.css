@@ -37,16 +37,105 @@ body {
   transition: background-color 0.6s ease;
 }
 
-/* Soporte de la tarjeta: tinte y líneas de seguridad casi invisibles */
-.card {
+/* ---------- Tarjeta 3D: dos caras reales, capas a distinta profundidad ---------- */
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: max(14px, 2.2vmin);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   color: rgb(var(--fg));
+  transition: color 0.6s ease;
+}
+.face-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background-color: var(--card);
   background-image:
     repeating-linear-gradient(-32deg, rgb(var(--fg) / 0.025) 0 1px, transparent 1px 7px),
     var(--card-grad);
-  transition: background-color 0.6s ease, color 0.6s ease;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.42);
+  transition: background-color 0.6s ease;
+}
+.face-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   transform-style: preserve-3d;
-  will-change: transform;
+}
+.layer {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+/* Profundidad con escala compensada: en reposo cada capa mide lo mismo que en 2D
+   (perspectiva 2600px); el desplazamiento solo aparece al girar o inclinar. */
+.d1 {
+  transform: translateZ(22px) scale(0.99154);
+}
+.d2 {
+  transform: translateZ(48px) scale(0.98154);
+}
+.d3 {
+  transform: translateZ(80px) scale(0.96923);
+}
+.grain {
+  border-radius: max(14px, 2.2vmin);
+  transform: translateZ(1px);
+  color: rgb(var(--fg));
+}
+
+.wordmark {
+  font-weight: 400;
+  font-size: clamp(15px, 3vmin, 38px);
+  letter-spacing: 0.46em;
+  line-height: 1;
+}
+.statement {
+  font-size: clamp(28px, min(8.6vmin, 5.4vw), 124px);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+.edge-note {
+  position: absolute;
+  right: max(14px, 3.2vmin);
+  top: 50%;
+  writing-mode: vertical-rl;
+  transform: translate3d(0, -50%, 22px) scale(0.99154);
+  white-space: nowrap;
+}
+
+/* ---------- Pantalla de carga ---------- */
+.loader {
+  background: #151c1b;
+  color: #f4efe6;
+}
+.loader-lbl {
+  font-family: "Inter", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 10px;
+  color: rgba(244, 239, 230, 0.6);
+}
+.loader-num {
+  font-family: "Red Rose", serif;
+  font-weight: 300;
+  font-size: clamp(40px, 9vmin, 96px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.loader-track {
+  height: 1px;
+  background: rgba(244, 239, 230, 0.18);
+  overflow: hidden;
+}
+.loader-bar {
+  height: 100%;
+  background: #f4efe6;
+  transform-origin: left;
 }
 
 .lbl {
