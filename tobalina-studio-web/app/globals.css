@@ -89,7 +89,7 @@ body {
 
 .wordmark {
   font-weight: 400;
-  font-size: clamp(15px, 3vmin, 38px);
+  font-size: clamp(17px, 3.5vmin, 44px);
   letter-spacing: 0.46em;
   line-height: 1;
 }
@@ -115,8 +115,8 @@ body {
 .loader-lbl {
   font-family: "Inter", sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-size: 11px;
   color: rgba(244, 239, 230, 0.6);
 }
 .loader-num {
@@ -142,8 +142,8 @@ body {
   font-family: "Inter", sans-serif;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: clamp(8px, 1.05vmin, 12px);
+  letter-spacing: 0.16em;
+  font-size: clamp(10px, 1.4vmin, 14px);
   color: rgb(var(--fg) / 0.62);
 }
 
@@ -172,8 +172,8 @@ body {
 .desc {
   font-family: "Inter", sans-serif;
   font-weight: 400;
-  font-size: clamp(10px, 1.35vmin, 15px);
-  line-height: 1.35;
+  font-size: clamp(12px, 1.75vmin, 18px);
+  line-height: 1.4;
   color: rgb(var(--fg) / 0.68);
   margin-top: 0.3em;
 }

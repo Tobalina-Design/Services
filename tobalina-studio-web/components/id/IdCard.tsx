@@ -52,6 +52,7 @@ export default function IdCard() {
   const rotated = touch && vp.h > vp.w;
   const eff = rotated ? { w: vp.h, h: vp.w } : vp;
   const short = eff.h < 520;
+  const tiny = eff.h < 400;
 
   const [ready, setReady] = useState(false);
   const onLoaded = useCallback(() => setReady(true), []);
@@ -161,11 +162,12 @@ export default function IdCard() {
             transition={{ duration: 1.3, ease: EASE_OUT, delay: ready ? 0.35 : 0 }}
           >
             <FaceShell side="front" active={face === "front"} shown={face === "front" || turning} glare={tilt ? glare : null} glareOpacity={glareOpacity}>
-              <Grain reduce={reduce} className="layer" />
+              <Grain reduce={reduce} paused={!(face === "front" || turning)} className="layer" />
               <Front ready={ready} reduce={reduce} onFlip={() => turnTo("back")} />
             </FaceShell>
             <FaceShell side="back" active={face === "back"} shown={face === "back" || turning} glare={tilt ? glare : null} glareOpacity={glareOpacity}>
-              <Back short={short} onFlip={() => turnTo("front")} />
+              <Grain reduce={reduce} paused={!(face === "back" || turning)} className="layer" />
+              <Back short={short} tiny={tiny} onFlip={() => turnTo("front")} />
             </FaceShell>
           </motion.div>
         </div>
@@ -357,7 +359,7 @@ function Front({ ready, reduce, onFlip }: { ready: boolean; reduce: boolean; onF
 
 /* ---------- Reverso ---------- */
 
-function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
+function Back({ short, tiny, onFlip }: { short: boolean; tiny: boolean; onFlip: () => void }) {
   return (
     <>
       <Header left="Servicios" right={DOC_NUMBER} />
@@ -368,7 +370,7 @@ function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
               <h2
                 id={`v-${v.key}`}
                 className="whitespace-nowrap font-display font-light uppercase"
-                style={{ fontSize: short ? "14px" : "clamp(17px, 3.4vmin, 44px)", lineHeight: 1 }}
+                style={{ fontSize: short ? "15px" : "clamp(18px, 3.6vmin, 46px)", lineHeight: 1 }}
               >
                 <span className="lbl mr-3 align-middle">0{vi + 1}</span>
                 {v.title}
@@ -377,11 +379,11 @@ function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
             </div>
             <ol>
               {v.items.map((s) => (
-                <li key={s.title} className="hair border-b" style={{ paddingBlock: short ? "5px" : "max(7px, 1.3vmin)" }}>
-                  <p className="font-display font-normal uppercase" style={{ fontSize: short ? "12px" : "clamp(12px, 1.8vmin, 22px)", lineHeight: 1.1 }}>
+                <li key={s.title} className="hair border-b" style={{ paddingBlock: short ? "4px" : "max(7px, 1.3vmin)" }}>
+                  <p className="font-display font-normal uppercase" style={{ fontSize: short ? "13px" : "clamp(14px, 2.25vmin, 27px)", lineHeight: 1.1 }}>
                     {s.title}
                   </p>
-                  <p className="desc" style={short ? { fontSize: "10px" } : undefined}>
+                  <p className="desc" style={short ? { fontSize: "11px" } : undefined}>
                     {s.description}
                   </p>
                 </li>
@@ -391,13 +393,15 @@ function Back({ short, onFlip }: { short: boolean; onFlip: () => void }) {
         ))}
       </div>
       <BottomRow onFlip={onFlip} to="front" />
-      <div className="layer d1 mrz" aria-label="Zona de lectura mecánica">
-        {MRZ_LINES.map((l) => (
-          <FitText key={l} max={short ? 11 : 24} lineHeight={1.3}>
-            {l}
-          </FitText>
-        ))}
-      </div>
+      {!tiny && (
+        <div className="layer d1 mrz" aria-label="Zona de lectura mecánica">
+          {MRZ_LINES.map((l) => (
+            <FitText key={l} max={short ? 11 : 24} lineHeight={1.3}>
+              {l}
+            </FitText>
+          ))}
+        </div>
+      )}
     </>
   );
 }

@@ -15,11 +15,11 @@ function makeTiles(rgb: [number, number, number]) {
     const ctx = c.getContext("2d")!;
     const img = ctx.createImageData(TILE, TILE);
     for (let i = 0; i < img.data.length; i += 4) {
-      const on = Math.random() < 0.28;
+      const on = Math.random() < 0.16;
       img.data[i] = rgb[0];
       img.data[i + 1] = rgb[1];
       img.data[i + 2] = rgb[2];
-      img.data[i + 3] = on ? 18 + Math.random() * 46 : 0;
+      img.data[i + 3] = on ? 10 + Math.random() * 28 : 0;
     }
     ctx.putImageData(img, 0, 0);
     return c;
@@ -31,8 +31,10 @@ function parseRgb(color: string): [number, number, number] {
   return m ? [+m[0], +m[1], +m[2]] : [35, 46, 44];
 }
 
-export default function Grain({ className = "", reduce = false }: { className?: string; reduce?: boolean }) {
+export default function Grain({ className = "", reduce = false, paused = false }: { className?: string; reduce?: boolean; paused?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   useEffect(() => {
     const canvas = ref.current;
@@ -70,7 +72,7 @@ export default function Grain({ className = "", reduce = false }: { className?: 
 
     const draw = (t: number) => {
       raf = requestAnimationFrame(draw);
-      if (t - last < 1000 / FPS || document.hidden) return;
+      if (t - last < 1000 / FPS || document.hidden || pausedRef.current) return;
       last = t;
       if (Math.floor(t / 1000) !== Math.floor((t - 1000 / FPS) / 1000)) refreshColor();
 
