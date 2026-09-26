@@ -6,16 +6,19 @@ Web de marca personal de Tobalina Studio (Beatriz Tobalina). Next.js 14 / TypeSc
 
 ## Concepto
 
-Toda la página evoca un DNI/pasaporte real, no solo la tarjeta: fondo con textura de seguridad (guilloché) deliberadamente más oscuro que las dos caras de la tarjeta, y un documento centrado con la proporción real de una tarjeta de identidad (ISO/IEC 7810 ID-1) en escritorio. `components/IdentityExperience.tsx` monta la experiencia completa:
+La web es un pasaporte a pantalla completa (`components/passport/`):
 
-- **Pestañas de vertical** — "identidad corporativa" / "bodas & eventos" siempre visibles encima del documento, nunca giran, nunca ambiguas. Cambiar de vertical vuelve siempre al frente.
-- **Frente** — campos tipo carnet real (marca, declaración, ref.) + caja de monograma (nunca un retrato real). El tilt 3D (cursor) se aplica solo en escritorio; el foil holográfico y el microtexto secundario (`lib/documents.ts` → `microtext`) son la capa de verificación, revelados solo tras un umbral (`REVEAL_THRESHOLD`).
-- **Reverso** — servicios de la vertical activa (`lib/services.ts`) en lista, más una franja decorativa tipo zona de lectura mecánica de pasaporte (`mrz`).
-- **Escritorio**: botón "ver servicios →" fuera de la tarjeta (nunca se solapa con su contenido) gira el documento en 3D.
-- **Móvil**: el giro es FÍSICO, no animado — la cara visible la decide la orientación real del teléfono (retrato = frente, horizontal = reverso), detectada por `pointer: coarse` en `globals.css` (no por ancho de viewport, que cambia al rotar). Un aviso "gira tu móvil" aparece en retrato.
-- La proporción estricta de tarjeta ID-1 solo se aplica a partir de 768px; en móvil el alto es el que pida el contenido, para evitar solapes.
+- **Portada** — lo primero que se ve: TOBALINA + "No hacemos ruido. Hacemos identidad.", emblema y título con foil que sigue al cursor, email visible.
+- **Doble página** con paso de hoja 3D real sobre el lomo (anverso y reverso). Navegación: flechas del teclado, esquinas de página, barra inferior, índice clicable, swipe en móvil.
+  1. Contraportada interior + página de datos (campos de pasaporte, holograma reactivo, número perforado, zona MRZ).
+  2. Visado · Identidad corporativa — servicios como sellos de entrada.
+  3. Visado · Bodas & eventos — ídem.
+  4. Observaciones + Autoridad expedidora (contacto: tobalina.design@gmail.com).
+- **Modo UV** (botón UV o tecla U): revela tintas ocultas y fibras fluorescentes, como un pasaporte real bajo luz ultravioleta.
+- **Móvil**: girar el teléfono ES abrir el pasaporte. Vertical = portada cerrada; horizontal = pasaporte abierto (detectado por `pointer: coarse` + orientación).
+- Tipografía y espaciado escalan con cada página mediante container query units (`u()` en `lib/passport.ts`).
 
-Cero scroll: un único viewport que cambia de cara y de documento, no una página que se recorre.
+Contenido editable en `lib/passport.ts` y `lib/services.ts`.
 
 ## Desarrollo
 
@@ -34,10 +37,11 @@ npm run dev
 
 ## Paleta
 
-- `ink` `#232E2C` — texto y fondo oscuro
+- `ink` `#232E2C` — portada y texto
 - `paper` `#F4EFE6` — fondo base
 - `sand` `#E4DBC8` — vertical bodas/eventos
-- `foil` `#C9C2B4` — capa holográfica de verificación
+- `foil` `#C9C2B4` — foil y holograma
+- `umber` `#7A6A52` — tinta de sellos y etiquetas
 
 ## Pendiente
 

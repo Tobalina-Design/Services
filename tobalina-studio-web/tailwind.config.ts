@@ -15,6 +15,7 @@ const config: Config = {
         paper: "#F4EFE6",
         sand: "#E4DBC8",
         foil: "#C9C2B4",
+        umber: "#7A6A52",
       },
       fontFamily: {
         display: ["Red Rose", "serif"],

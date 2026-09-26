@@ -2,89 +2,201 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #3a4440;
-  --foreground: #f4efe6;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: #232e2c;
+  overscroll-behavior: none;
 }
 
 body {
-  color: var(--foreground);
+  color: #f4efe6;
   font-family: "Inter", Arial, Helvetica, sans-serif;
-  /* Fondo de página tipo guilloché — textura de seguridad de documento oficial,
-     deliberadamente más oscuro que las dos caras de la tarjeta (ink y paper),
-     para que cualquiera de las dos se distinga siempre del fondo. */
-  background-color: var(--background);
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      rgba(244, 239, 230, 0.035) 0px,
-      rgba(244, 239, 230, 0.035) 1px,
-      transparent 1px,
-      transparent 10px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(244, 239, 230, 0.035) 0px,
-      rgba(244, 239, 230, 0.035) 1px,
-      transparent 1px,
-      transparent 10px
-    ),
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* ---------- Variables de página (se invierten en modo UV) ---------- */
+.passport {
+  --pg-bg: #f4efe6;
+  --pg-fg: #232e2c;
+  --pg-ink2: #7a6a52;
+  --pg-fiber: #7a6a52;
+}
+.passport.uv {
+  --pg-bg: #141b1a;
+  --pg-fg: #e4dbc8;
+  --pg-ink2: #c9c2b4;
+  --pg-fiber: #f4efe6;
 }
 
-/* Proporción real de un documento de identidad (ISO/IEC 7810 ID-1: 85.6 x 53.98mm).
-   Solo se impone a partir de escritorio: a lo ancho de un móvil, esa proporción
-   deja demasiado poco alto para el contenido y provoca solapes. En móvil la
-   tarjeta crece en alto lo que el contenido necesite (ver .id-card-shell en
-   el componente: max-w-[420px] + altura automática). */
-@media (min-width: 768px) {
-  .id-card-shell {
-    aspect-ratio: 1.586 / 1;
-    width: min(92vw, 900px);
-    max-width: none;
-  }
+.pg {
+  container-type: size;
+  background-color: var(--pg-bg);
+  background-image: linear-gradient(180deg, rgba(228, 219, 200, 0.35), transparent 30%, transparent 70%, rgba(228, 219, 200, 0.35));
+  color: var(--pg-fg);
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+.passport.uv .pg {
+  background-image: radial-gradient(circle at 50% 40%, rgba(201, 194, 180, 0.08), transparent 70%);
 }
 
-/* --- Comportamiento en móvil: el giro es físico, no animado ---
-   Se detecta "es un móvil" por PUNTERO TÁCTIL (pointer: coarse), no por ancho:
-   un teléfono en horizontal suele superar los 768px de ancho (ej. 844px), así
-   que un corte por max-width se rompe justo al girarlo. pointer:coarse no
-   cambia con la orientación, así que es un criterio fiable.
-   El !important es deliberado: pisa el transform inline que aplica Framer
-   Motion para el flip de escritorio. */
+.ink2 {
+  color: var(--pg-ink2);
+}
+.hair {
+  border-color: color-mix(in srgb, currentColor 20%, transparent);
+}
+.hair-strong {
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.mrz {
+  font-family: "OCR-B", "OCR B", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--pg-fg);
+}
+
+/* ---------- Modo UV: tintas ocultas y fibras fluorescentes ---------- */
+.uv-only {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.passport.uv .uv-only {
+  opacity: 1;
+}
+.uv-glow {
+  color: rgba(228, 219, 200, 0.22);
+  text-shadow: 0 0 18px rgba(228, 219, 200, 0.45), 0 0 2px rgba(244, 239, 230, 0.6);
+}
+.fibers {
+  opacity: 0.25;
+  transition: opacity 0.7s ease, filter 0.7s ease;
+}
+.passport.uv .fibers {
+  opacity: 0.95;
+  filter: drop-shadow(0 0 2px rgba(244, 239, 230, 0.9));
+}
+.stamp-blend {
+  mix-blend-mode: multiply;
+}
+.passport.uv .stamp-blend {
+  mix-blend-mode: screen;
+}
+
+/* ---------- Portada: foil que sigue al cursor ---------- */
+.foil-text {
+  background: linear-gradient(
+    105deg,
+    #a39a88 0%,
+    #e4dbc8 calc(var(--fx, 50%) - 18%),
+    #ffffff var(--fx, 50%),
+    #e4dbc8 calc(var(--fx, 50%) + 18%),
+    #a39a88 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.foil-border {
+  border: 1.5px solid #c9c2b4;
+  box-shadow: inset 0 0 0 6px #232e2c, inset 0 0 0 7px rgba(201, 194, 180, 0.5);
+}
+.foil-sheen {
+  background: radial-gradient(circle at var(--fx, 50%) var(--fy, 40%), rgba(228, 219, 200, 0.1), transparent 45%);
+}
+
+/* ---------- Holograma de la foto ---------- */
+.hologram {
+  opacity: 0.35;
+  mix-blend-mode: soft-light;
+  background: conic-gradient(
+    from calc(var(--hx, 0.3) * 1turn) at calc(var(--hx, 0.5) * 100%) calc(var(--hy, 0.5) * 100%),
+    rgba(228, 219, 200, 0),
+    rgba(255, 255, 255, 0.8),
+    rgba(201, 194, 180, 0),
+    rgba(122, 106, 82, 0.7),
+    rgba(228, 219, 200, 0)
+  );
+  transition: opacity 0.4s ease;
+}
+.group\/data:hover .hologram {
+  opacity: 0.9;
+}
+
+/* ---------- Esquinas para pasar página ---------- */
+.corner {
+  width: 11vmin;
+  height: 11vmin;
+  transition: background 0.3s ease;
+}
+.corner-right {
+  background: linear-gradient(315deg, transparent 50%, transparent 50%);
+}
+.corner-right:hover {
+  background: linear-gradient(315deg, #232e2c 0%, #3a4440 24%, rgba(228, 219, 200, 0.9) 25%, transparent 26%);
+}
+.corner-left:hover {
+  background: linear-gradient(45deg, #232e2c 0%, #3a4440 24%, rgba(228, 219, 200, 0.9) 25%, transparent 26%);
+}
 @media (pointer: coarse) {
-  .doc-flip-wrapper {
-    transform: none !important;
-  }
-  .doc-back-face {
-    transform: none !important;
-  }
-  .doc-front-face,
-  .doc-back-face {
-    display: none !important;
-  }
-  .desktop-flip-control {
-    display: none !important;
+  .corner {
+    display: none;
   }
 }
 
-@media (pointer: coarse) and (orientation: portrait) {
-  .doc-front-face {
-    display: flex !important;
-  }
-  .mobile-rotate-hint {
-    display: flex !important;
-  }
+/* ---------- Navegación ---------- */
+.nav-btn {
+  min-width: 32px;
+  height: 30px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.nav-btn:hover:not(:disabled) {
+  background: rgba(244, 239, 230, 0.14);
+}
+.nav-btn:disabled {
+  opacity: 0.3;
+}
+.nav-btn:focus-visible,
+.corner:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #c9c2b4;
+  outline-offset: 2px;
 }
 
-@media (pointer: coarse) and (orientation: landscape) {
-  .doc-back-face {
-    display: flex !important;
+/* ---------- Enlace de email ---------- */
+.email-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1px no-repeat;
+  transition: background-size 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  padding-bottom: 2px;
+  word-break: break-all;
+}
+.email-link:hover {
+  background-size: 100% 1px;
+}
+
+/* ---------- Aviso de girar el móvil ---------- */
+@keyframes rotate-phone {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  55%,
+  80% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.rotate-phone {
+  animation: rotate-phone 2.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rotate-phone {
+    animation: none;
   }
 }

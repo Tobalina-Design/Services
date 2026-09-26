@@ -1,9 +1,9 @@
-import IdentityExperience from "@/components/IdentityExperience";
+import Passport from "@/components/passport/Passport";
 
 export default function Home() {
   return (
     <main>
-      <IdentityExperience />
+      <Passport />
     </main>
   );
 }
