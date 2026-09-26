@@ -4,13 +4,16 @@
 // Las caras cambian con un fundido (botón; en escritorio también ← → y R).
 // Móvil: el documento SIEMPRE se compone en horizontal. Con el teléfono en
 // vertical se muestra girado 90°, de modo que hay que girar el móvil para leerlo.
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { AnimatePresence, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { AnimatePresence, animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import { DOC_NUMBER, EMAIL, MRZ_LINES, STATEMENT_LINES, VERTICALS } from "@/lib/idcard";
 import FitText from "./FitText";
 import { useMediaQuery } from "./useMediaQuery";
 
 type Face = "front" | "back";
+type Theme = "light" | "dark";
+
+const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "light", toggle: () => {} });
 const PAD = "max(14px, 3vmin)";
 const GAP = "max(10px, 2.4vmin)";
 
@@ -35,6 +38,48 @@ export default function IdCard() {
   const [face, setFace] = useState<Face>("front");
   const [hint, setHint] = useState(false);
 
+  // Modo claro / oscuro (se recuerda en este navegador; por defecto, el del sistema)
+  const [theme, setTheme] = useState<Theme>("light");
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("tbl-theme");
+    } catch {}
+    if (saved === "light" || saved === "dark") setTheme(saved);
+    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) setTheme("dark");
+  }, []);
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => {
+      const next = t === "light" ? "dark" : "light";
+      try {
+        localStorage.setItem("tbl-theme", next);
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  // Giro de la tarjeta al cambiar de cara: se inclina hasta ponerse de canto,
+  // cambia el contenido sin que se vea y vuelve a su sitio desde el otro lado.
+  const flipY = useMotionValue(0);
+  const flipScale = useTransform(flipY, [-90, 0, 90], [0.84, 1, 0.84]);
+  const faceRef = useRef<Face>("front");
+  const busy = useRef(false);
+  const turnTo = useCallback(
+    async (target: Face) => {
+      if (busy.current || target === faceRef.current) return;
+      faceRef.current = target;
+      if (reduce) return setFace(target);
+      busy.current = true;
+      const dir = target === "back" ? -1 : 1;
+      await animate(flipY, 90 * dir, { duration: 0.34, ease: [0.55, 0, 0.8, 0.35] });
+      setFace(target);
+      flipY.set(-90 * dir);
+      await animate(flipY, 0, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
+      busy.current = false;
+    },
+    [flipY, reduce]
+  );
+
   // Tilt: la tarjeta se inclina siguiendo el cursor (solo ratón, no en móvil)
   const fine = useMediaQuery("(pointer: fine)");
   const tilt = fine && !rotated && !reduce;
@@ -46,6 +91,7 @@ export default function IdCard() {
   const gy = useTransform(sx, [-2.5, 2.5], [80, 20]);
   const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.45), rgba(255,255,255,0) 45%)`;
   const glareOpacity = useTransform([sx, sy], ([x, y]: number[]) => Math.min(1, (Math.abs(x) + Math.abs(y)) / 3.5));
+  const rotY = useTransform([sy, flipY], ([a, b]: number[]) => (tilt ? a : 0) + b);
 
   function onMove(e: React.MouseEvent) {
     if (!tilt) return;
@@ -61,13 +107,13 @@ export default function IdCard() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") setFace("back");
-      if (e.key === "ArrowLeft") setFace("front");
-      if (e.key.toLowerCase() === "r") setFace((s) => (s === "front" ? "back" : "front"));
+      if (e.key === "ArrowRight") turnTo("back");
+      if (e.key === "ArrowLeft") turnTo("front");
+      if (e.key.toLowerCase() === "r") turnTo(faceRef.current === "front" ? "back" : "front");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [turnTo]);
 
   // Aviso breve de "gira el móvil" cuando el documento aparece girado
   useEffect(() => {
@@ -82,34 +128,30 @@ export default function IdCard() {
     : { position: "absolute", inset: 0 };
 
   return (
-    <div className="relative h-[100dvh] w-screen overflow-hidden bg-ink" onMouseMove={onMove} onMouseLeave={onLeave}>
-      <div style={{ ...frame, padding: tilt ? "max(14px, 3.4vmin)" : "max(6px, 0.9vmin)", perspective: 2000 }}>
+    <ThemeCtx.Provider value={{ theme, toggle: toggleTheme }}>
+    <div
+      className={`theme-${theme} page relative h-[100dvh] w-screen overflow-hidden`}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      <div style={{ ...frame, padding: tilt ? "max(14px, 3.4vmin)" : "max(6px, 0.9vmin)", perspective: 3600 }}>
         <motion.div
-          className="card relative h-full w-full overflow-hidden text-ink"
+          className="card relative h-full w-full overflow-hidden"
           style={{
             borderRadius: "max(14px, 2.2vmin)",
             rotateX: tilt ? sx : 0,
-            rotateY: tilt ? sy : 0,
+            rotateY: rotY,
+            scale: flipScale,
             boxShadow: tilt ? "0 30px 80px rgba(0,0,0,0.45)" : undefined,
           }}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={face}
-              className="absolute inset-0 flex flex-col"
-              style={{ padding: PAD, gap: GAP }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reduce ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {face === "front" ? (
-                <Front onFlip={() => setFace("back")} />
-              ) : (
-                <Back short={short} onFlip={() => setFace("front")} />
-              )}
-            </motion.div>
-          </AnimatePresence>
+          <div className="absolute inset-0 flex flex-col" style={{ padding: PAD, gap: GAP }}>
+            {face === "front" ? (
+              <Front onFlip={() => turnTo("back")} />
+            ) : (
+              <Back short={short} onFlip={() => turnTo("front")} />
+            )}
+          </div>
           {tilt && (
             <motion.div
               aria-hidden="true"
@@ -123,7 +165,7 @@ export default function IdCard() {
       <AnimatePresence>
         {hint && (
           <motion.div
-            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-ink/70"
+            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -141,6 +183,7 @@ export default function IdCard() {
         )}
       </AnimatePresence>
     </div>
+    </ThemeCtx.Provider>
   );
 }
 
@@ -167,8 +210,29 @@ function Header({ left, right }: { left: string; right: string }) {
         <Chip />
         <Lbl>{left}</Lbl>
       </div>
-      <Lbl>{right}</Lbl>
+      <div className="flex items-center" style={{ gap: "max(12px, 2vmin)" }}>
+        <ThemeToggle />
+        <Lbl className="hidden sm:inline">{right}</Lbl>
+      </div>
     </header>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, toggle } = useContext(ThemeCtx);
+  const dark = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={dark}
+      aria-label={dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      className="theme-toggle lbl flex items-center"
+    >
+      <span className={dark ? "" : "is-on"}>Claro</span>
+      <span aria-hidden="true" className="mx-2 opacity-40">/</span>
+      <span className={dark ? "is-on" : ""}>Oscuro</span>
+    </button>
   );
 }
 
