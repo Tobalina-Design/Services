@@ -28,7 +28,7 @@ import { useMediaQuery } from "./useMediaQuery";
 type Face = "front" | "back";
 type Theme = "light" | "dark";
 
-const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "light", toggle: () => {} });
+const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: "dark", toggle: () => {} });
 const PAD = "max(14px, 3.2vmin)";
 const GAP = "max(10px, 2.4vmin)";
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -61,14 +61,14 @@ export default function IdCard() {
   const [hint, setHint] = useState(false);
 
   // Tema
-  const [theme, setTheme] = useState<Theme>("light");
+  // Oscuro por defecto; si el visitante eligió otro modo, se respeta
+  const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => {
     let saved: string | null = null;
     try {
       saved = localStorage.getItem("tbl-theme");
     } catch {}
     if (saved === "light" || saved === "dark") setTheme(saved);
-    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) setTheme("dark");
   }, []);
   const toggleTheme = useCallback(() => {
     setTheme((t) => {
@@ -273,11 +273,11 @@ function ThemeToggle() {
       aria-label={dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       className="theme-toggle lbl flex items-center"
     >
-      <span className={dark ? "" : "is-on"}>Claro</span>
+      <span className={dark ? "is-on" : ""}>Oscuro</span>
       <span aria-hidden="true" className="mx-2 opacity-40">
         /
       </span>
-      <span className={dark ? "is-on" : ""}>Oscuro</span>
+      <span className={dark ? "" : "is-on"}>Claro</span>
     </button>
   );
 }

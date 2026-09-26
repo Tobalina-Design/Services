@@ -13,7 +13,7 @@ La web es un DNI a pantalla completa (`components/id/IdCard.tsx`), sin scroll:
 - **Reverso** — servicios en dos columnas (identidad corporativa / bodas & eventos), contacto y zona de lectura mecánica (3 × 30).
 - **Volteo** — tarjeta 3D real de dos caras: se eleva, gira 180° en 1,7 s y se asienta. Las capas de contenido están a distinta profundidad (escala compensada en reposo), así que se desplazan entre sí durante el giro.
 - **Tilt** con el cursor en escritorio, con brillo.
-- **Modo claro / oscuro** en la cabecera; se recuerda y por defecto sigue al sistema.
+- **Modo oscuro / claro** en la cabecera; oscuro por defecto, se recuerda la elección.
 - **Móvil**: el documento siempre se compone en horizontal; con el teléfono en vertical aparece girado y hay que girarlo para leer.
 
 Contenido editable en `lib/idcard.ts` y `lib/services.ts`.
