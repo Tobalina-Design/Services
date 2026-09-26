@@ -1,9 +1,9 @@
-import Passport from "@/components/passport/Passport";
+import IdCard from "@/components/id/IdCard";
 
 export default function Home() {
   return (
     <main>
-      <Passport />
+      <IdCard />
     </main>
   );
 }

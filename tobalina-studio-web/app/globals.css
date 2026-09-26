@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Brutalista: dos tintas (ink / paper), cero ornamento, cero radios. */
+/* DNI: dos tintas (ink / paper), líneas finas, peso ligero. */
 
 html,
 body {
@@ -13,137 +13,104 @@ body {
 }
 
 body {
-  color: #f4efe6;
   font-family: "Inter", Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.label {
+/* Soporte de la tarjeta: tinte cálido y líneas de seguridad casi invisibles */
+.card {
+  background-color: #f4efe6;
+  background-image:
+    repeating-linear-gradient(-32deg, rgba(35, 46, 44, 0.022) 0 1px, transparent 1px 7px),
+    linear-gradient(118deg, #f6f2ea 0%, #f1ebe0 48%, #e7dfce 100%);
+}
+
+.lbl {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: clamp(8px, 1.05vmin, 12px);
+  color: rgba(35, 46, 44, 0.62);
+}
+
+.val {
   font-family: "Inter", sans-serif;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: max(9px, 1.05vmin);
+  letter-spacing: 0.04em;
+  font-size: clamp(11px, 1.7vmin, 20px);
+  line-height: 1.2;
+  margin-top: 0.3em;
 }
 
-/* ---------- Páginas (se invierten con luz UV) ---------- */
-.passport {
-  --pg-bg: #f4efe6;
-  --pg-fg: #232e2c;
+.hair {
+  border-color: rgba(35, 46, 44, 0.22);
 }
-.passport.uv {
-  --pg-bg: #232e2c;
-  --pg-fg: #f4efe6;
+
+.chip {
+  width: clamp(24px, 3.4vmin, 40px);
+  height: auto;
+  fill: #e4dbc8;
+  stroke: rgba(35, 46, 44, 0.55);
+  stroke-width: 0.8;
 }
-.pg {
-  container-type: size;
-  background: var(--pg-bg);
-  color: var(--pg-fg);
-  transition: background-color 0.5s ease, color 0.5s ease;
+
+/* Foto: monograma, nunca un retrato */
+.photo {
+  background: linear-gradient(160deg, rgba(228, 219, 200, 0.55), rgba(201, 194, 180, 0.35));
+  border: 1px solid rgba(35, 46, 44, 0.3);
+}
+
+/* Holograma: disco de foil que gira muy despacio */
+.holo {
+  width: 34%;
+  aspect-ratio: 1;
+  right: -12%;
+  bottom: -9%;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, #e4dbc8, #f4efe6, #c9c2b4, #a39a88, #e4dbc8, #f4efe6, #c9c2b4);
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  animation: holo 24s linear infinite;
+}
+@keyframes holo {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .mrz {
   font-family: "OCR-B", "OCR B", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: rgba(35, 46, 44, 0.85);
+  letter-spacing: 0.08em;
 }
 
-/* Tinta oculta: texto a trazo, visible solo con UV */
-.uv-only {
-  opacity: 0;
-  transition: opacity 0.5s ease;
+/* Enlaces y botón de giro */
+.link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1px no-repeat;
+  transition: background-size 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.passport.uv .uv-only {
-  opacity: 1;
+.link:hover {
+  background-size: 100% 1px;
 }
-.uv-ink {
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(244, 239, 230, 0.35);
+.flip {
+  color: #232e2c;
+  padding: 6px 14px;
+  border: 1px solid rgba(35, 46, 44, 0.35);
+  border-radius: 9999px;
+  transition: background 0.35s ease, color 0.35s ease;
 }
-
-/* Índice */
-.index-row:hover {
-  background: var(--pg-fg);
-  color: var(--pg-bg);
-}
-
-/* Email: subrayado que se dibuja */
-.email-link {
-  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 3px no-repeat;
-  transition: background-size 0.5s cubic-bezier(0.65, 0, 0.35, 1);
-  padding-bottom: 4px;
-}
-.email-link:hover {
-  background-size: 100% 3px;
-}
-
-/* ---------- Esquinas para pasar página ---------- */
-.corner {
-  width: 9vmin;
-  height: 9vmin;
-}
-.corner-right:hover {
-  background: linear-gradient(315deg, #232e2c 50%, transparent 50%);
-}
-.corner-left:hover {
-  background: linear-gradient(45deg, #232e2c 50%, transparent 50%);
-}
-.passport.uv .corner-right:hover {
-  background: linear-gradient(315deg, #f4efe6 50%, transparent 50%);
-}
-.passport.uv .corner-left:hover {
-  background: linear-gradient(45deg, #f4efe6 50%, transparent 50%);
-}
-@media (pointer: coarse) {
-  .corner {
-    display: none;
-  }
-}
-
-/* ---------- Navegación ---------- */
-.nav {
+.flip:hover {
   background: #232e2c;
   color: #f4efe6;
-  border: 1px solid #f4efe6;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 10px;
-  height: 32px;
-}
-.nav-cell {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 14px;
-  border-left: 1px solid rgba(244, 239, 230, 0.25);
-  border-right: 1px solid rgba(244, 239, 230, 0.25);
-  white-space: nowrap;
-}
-.nav-btn {
-  min-width: 40px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-}
-.nav-btn + .nav-btn {
-  border-left: 1px solid rgba(244, 239, 230, 0.25);
-}
-.nav-btn:hover:not(:disabled),
-.nav-on {
-  background: #f4efe6;
-  color: #232e2c;
-}
-.nav-btn:disabled {
-  opacity: 0.25;
 }
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
+  outline: 1px solid #232e2c;
+  outline-offset: 3px;
 }
 
-/* ---------- Aviso de girar el móvil ---------- */
 @keyframes rotate-phone {
   0%,
   25% {
@@ -161,7 +128,8 @@ button:focus-visible {
   animation: rotate-phone 2.8s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rotate-phone {
+  .rotate-phone,
+  .holo {
     animation: none;
   }
 }

@@ -6,19 +6,14 @@ Web de marca personal de Tobalina Studio (Beatriz Tobalina). Next.js 14 / TypeSc
 
 ## Concepto
 
-La web es un pasaporte a pantalla completa (`components/passport/`):
+La web es un DNI a pantalla completa (`components/id/IdCard.tsx`), sin scroll y sin paso de hoja:
 
-- **Portada** — lo primero que se ve: TOBALINA + "No hacemos ruido. Hacemos identidad.", emblema y título con foil que sigue al cursor, email visible.
-- **Doble página** con paso de hoja 3D real sobre el lomo (anverso y reverso). Navegación: flechas del teclado, esquinas de página, barra inferior, índice clicable, swipe en móvil.
-  1. Contraportada interior + página de datos (campos de pasaporte, holograma reactivo, número perforado, zona MRZ).
-  2. Visado · Identidad corporativa — servicios como sellos de entrada.
-  3. Visado · Bodas & eventos — ídem.
-  4. Observaciones + Autoridad expedidora (contacto: tobalina.design@gmail.com).
-- **Modo UV** (botón UV o tecla U): revela tintas ocultas y fibras fluorescentes, como un pasaporte real bajo luz ultravioleta.
-- **Móvil**: girar el teléfono ES abrir el pasaporte. Vertical = portada cerrada; horizontal = pasaporte abierto (detectado por `pointer: coarse` + orientación).
-- Tipografía y espaciado escalan con cada página mediante container query units (`u()` en `lib/passport.ts`).
+- **Anverso** — chip, caja de foto con monograma y holograma, la declaración "No hacemos ruido. Hacemos identidad." como protagonista, campos de documento y TOBALINA a todo el ancho.
+- **Reverso** — servicios en dos columnas (identidad corporativa / bodas & eventos), contacto (tobalina.design@gmail.com) y zona de lectura mecánica en formato DNI (3 × 30).
+- **Escritorio**: se cambia de cara con un fundido (botón, ← → o tecla R).
+- **Móvil**: la orientación decide la cara — vertical = anverso, horizontal = reverso. En alturas bajas el reverso se compacta.
 
-Contenido editable en `lib/passport.ts` y `lib/services.ts`.
+Contenido editable en `lib/idcard.ts` y `lib/services.ts`.
 
 ## Desarrollo
 
@@ -31,7 +26,7 @@ npm run dev
 
 - Next.js 14 (App Router) + TypeScript
 - Tailwind CSS
-- Framer Motion (tilt, spring, transiciones)
+- Framer Motion (fundido entre caras)
 - GSAP + Lenis (instalados, pendientes de scroll/timeline en próximas secciones)
 - Fuentes autohospedadas: Red Rose (display) + Inter (body) vía `@fontsource`
 
