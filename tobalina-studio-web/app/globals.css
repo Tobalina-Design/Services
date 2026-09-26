@@ -3,18 +3,88 @@
 @tailwind utilities;
 
 :root {
-  --background: #f4efe6;
-  --foreground: #232e2c;
+  --background: #3a4440;
+  --foreground: #f4efe6;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
   font-family: "Inter", Arial, Helvetica, sans-serif;
+  /* Fondo de página tipo guilloché — textura de seguridad de documento oficial,
+     deliberadamente más oscuro que las dos caras de la tarjeta (ink y paper),
+     para que cualquiera de las dos se distinga siempre del fondo. */
+  background-color: var(--background);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(244, 239, 230, 0.035) 0px,
+      rgba(244, 239, 230, 0.035) 1px,
+      transparent 1px,
+      transparent 10px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(244, 239, 230, 0.035) 0px,
+      rgba(244, 239, 230, 0.035) 1px,
+      transparent 1px,
+      transparent 10px
+    ),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%);
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* Proporción real de un documento de identidad (ISO/IEC 7810 ID-1: 85.6 x 53.98mm).
+   Solo se impone a partir de escritorio: a lo ancho de un móvil, esa proporción
+   deja demasiado poco alto para el contenido y provoca solapes. En móvil la
+   tarjeta crece en alto lo que el contenido necesite (ver .id-card-shell en
+   el componente: max-w-[420px] + altura automática). */
+@media (min-width: 768px) {
+  .id-card-shell {
+    aspect-ratio: 1.586 / 1;
+    width: min(92vw, 900px);
+    max-width: none;
+  }
+}
+
+/* --- Comportamiento en móvil: el giro es físico, no animado ---
+   Se detecta "es un móvil" por PUNTERO TÁCTIL (pointer: coarse), no por ancho:
+   un teléfono en horizontal suele superar los 768px de ancho (ej. 844px), así
+   que un corte por max-width se rompe justo al girarlo. pointer:coarse no
+   cambia con la orientación, así que es un criterio fiable.
+   El !important es deliberado: pisa el transform inline que aplica Framer
+   Motion para el flip de escritorio. */
+@media (pointer: coarse) {
+  .doc-flip-wrapper {
+    transform: none !important;
+  }
+  .doc-back-face {
+    transform: none !important;
+  }
+  .doc-front-face,
+  .doc-back-face {
+    display: none !important;
+  }
+  .desktop-flip-control {
+    display: none !important;
+  }
+}
+
+@media (pointer: coarse) and (orientation: portrait) {
+  .doc-front-face {
+    display: flex !important;
+  }
+  .mobile-rotate-hint {
+    display: flex !important;
+  }
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .doc-back-face {
+    display: flex !important;
   }
 }
